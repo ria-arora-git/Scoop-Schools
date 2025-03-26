@@ -1,3 +1,12 @@
+import {
+  ClerkProvider,
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs'
+
 export default function Home() {
   return (
     
@@ -11,7 +20,13 @@ export default function Home() {
                     <li><a href="#" className="hover:underline">Home</a></li>
                     <li><a href="#" className="hover:underline">About us</a></li>
                     <li><a href="#" className="hover:underline">Listings</a></li>
-                    <li><a href="#" className="hover:underline">Sign In</a></li>
+                    <li><SignedOut>
+                          <SignInButton />
+                        </SignedOut>
+                        <SignedIn>
+                          <UserButton />
+                        </SignedIn>
+                    </li>
                 </ul>
             </nav>
         </div>
