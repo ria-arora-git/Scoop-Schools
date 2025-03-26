@@ -1,74 +1,110 @@
-"use client"
+'use client'
 
-import React from "react";
-import Card from "./../components/Card"; // Import the reusable Card component
+import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
 
-export default function Listings() {
-  const schools = [
-    {
-      name: "School Name 1",
-      location: "City 1, State 1",
-      description: "A brief description of School 1 and its features.",
-    },
-    {
-      name: "School Name 2",
-      location: "City 2, State 2",
-      description: "A brief description of School 2 and its features.",
-    },
-    {
-      name: "School Name 3",
-      location: "City 3, State 3",
-      description: "A brief description of School 3 and its features.",
-    },
-  ];
+
+const slides = [
+  { src: '/1.jpg', alt: 'Ad 1' },
+  { src: '/2.jpg', alt: 'Ad 2' },
+  { src: '/1.jpg', alt: 'Ad 3' },
+  { src: '/2.jpg', alt: 'Ad 4' }
+];
+
+const HomePage = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % slides.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="bg-gray-50 text-gray-800 h-screen flex flex-col">
-      {/* Navbar */}
-      <header className="bg-blue-900 py-4">
-        <div className="container mx-auto flex justify-between items-center px-4">
-          <h1 className="text-2xl font-bold text-white">Scoop Schools</h1>
-          <nav>
-            <ul className="flex space-x-8 text-sm text-white">
-              <li><a href="/hehe" className="hover:underline">Home</a></li>
-              <li><a href="/about" className="hover:underline">About Us</a></li>
-              <li><a href="/listings" className="hover:underline">Listings</a></li>
-              <li><a href="/contact" className="hover:underline">Contact</a></li>
-            </ul>
-          </nav>
-          <button className="bg-white text-blue-900 px-4 py-2 rounded hover:bg-gray-200">
-            Login
-          </button>
+    <div className="min-h-screen bg-gray-100 ">
+      <header className='w-full fixed top-0 left-0 bg-blue-800 backdrop-blur-sm z-50 h-16 flex justify-between items-center px-4 border-b border-purple-300/20'>
+        <div className='flex justify-between items-center'>
+          <div className='hover:scale-105 transition-transform duration-300'>
+            <Image
+              src=""
+              alt='logo'
+              className='h-20 w-20 p-1 ml-6'
+            />
+          </div>
+          <div>
+            <h1 className='text-white text-4xl font-bold ml-2 hover:text-purple-300 transition-colors text-center'>Scoop Schools</h1>
+          </div>
+        </div>
+        <div className='p-2 mx-8 flex justify-between text-xl font-semibold text-white gap-16'>
+          <a href="/preferenceform" className='hover:text-purple-300 transition-colors'>Publish your ad</a>
+          <a href="/chatpage" className='hover:text-purple-300 transition-colors'>AiBot</a>
+    
+         
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-grow py-12">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8 text-blue-800 text-center">School Listings</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {schools.map((school, index) => (
-              <Card
-                key={index}
-                schoolName={school.name}
-                location={school.location}
-                description={school.description}
-                onDetailsClick={() => alert(`View details for ${school.name}`)}
+      <div className="my-4 flex flex-col justify-center items-baseline text-center pt-16">
+        <h2 className="w-full text-3xl font-semibold mb-4 text-black">Find your new home</h2>
+        <div className="relative w-full h-80">
+          {slides.map((slide, index) => (
+            <Image
+              key=""
+              src={slide.src}
+              alt={slide.alt}
+              layout="fill"
+              objectFit="cover"
+              className={`px-6 absolute inset-0 transition-opacity duration-1000 ${index === currentIndex ? 'opacity-100' : 'opacity-0'}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <h1 className='text-4xl font-bold text-black text-center mt-12'>Our <span className='text-purple-700'>Latest</span> Listing</h1>
+      <div className='main flex items-center justify-center gap-4 mt-8'>
+        <div className='flex relative items-center justify-between gap-4'>
+          <div className=' bg-purple-100 h-[75vh] w-[75vh] rounded-2xl'>
+            <Image
+              src=""
+              alt='sample'
+              className="h-full w-full"
+            />
+          </div>
+          <div className='h-[75vh] w-[75vh] rounded-lg'>
+            <div className='w-full bg-purple-100 mx-2 h-3/5 rounded-2xl '>
+              <Image
+                src=""
+                alt='sample'
+                className="h-full w-full"
               />
-            ))}
+            </div>
+            <div className='pt-6 h-2/5 flex justify-between gap-2'>
+              <div className='w-full ml-2 bg-purple-100 h-full rounded-2xl'>
+                <Image
+                  src=""
+                  alt='sample'
+                  className="h-full w-full"
+                />
+              </div>
+              <div className='w-full ml-3 bg-purple-100 h-full rounded-2xl'>
+                <Image
+                  src=""
+                  alt='sample'
+                  className="h-full w-full"
+                />
+              </div>
+            </div>
           </div>
         </div>
-      </main>
+      </div>
 
-      {/* Footer */}
-      <footer className="bg-blue-800 py-6">
-        <div className="container mx-auto text-center text-white">
-          <p className="text-sm">&copy; 2025 Scoop Schools. All rights reserved.</p>
-          <p className="text-sm">
-            Follow us on <a href="#" className="text-blue-500 hover:underline">Social Media</a>
-          </p>
-        </div>
-      </footer>
+      <div className="flex justify-center mt-8 pb-6">
+          <a href='/home' className="animate-bounce bg-purple-700 text-white font-bold py-2 px-4 rounded-full text-xl">
+            See more options
+          </a>
+      </div>
     </div>
   );
-}
+};
+
+export default HomePage;
