@@ -1,56 +1,45 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import * as XLSX from "xlsx";
-import fs from "fs";
+import path from "path";
 
 const prisma = new PrismaClient();
 
-// Define TypeScript interface for expected Excel row structure
-interface ExcelRow {
-  "School Name": string;
-  "Address": string;
-  "City": string;
-  "Facilities": string;
-}
+// Use Prisma's predefined type for batch inserts
+type SchoolData = Prisma.SchoolCreateManyInput;
 
-// Define TypeScript interface for School model in Prisma
-interface School {
-  name: string;
-  address: string;
-  city: string;
-  facilities: string;
-}
-
-// Function to read Excel file and import data into Prisma
 async function importSchools() {
-  const filePath = "./schools.xlsx"; // Ensure this file exists in your root folder
+  const filePath = path.join(__dirname, "../schools.xlsx");
 
-  if (!fs.existsSync(filePath)) {
-    console.error("❌ Error: File not found!");
-    return;
-  }
-
-  // Read Excel file
+  // Read the Excel file
   const workbook = XLSX.readFile(filePath);
-  const sheetName = workbook.SheetNames[0]; // Read first sheet
-  const sheet = workbook.Sheets[sheetName];
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-  // Convert sheet data to JSON
-  const data: ExcelRow[] = XLSX.utils.sheet_to_json<ExcelRow>(sheet);
+  // 🔹 Define type for `data` to avoid TypeScript errors
+  const data: Record<string, string | undefined>[] = XLSX.utils.sheet_to_json(sheet);
 
-  // Transform data into Prisma format
-  const schools: School[] = data.map((row) => ({
-    name: row["School Name"] || "Unnamed School",
-    address: row["Address"] || "No Address",
-    city: row["City"] || "Unknown City",
-    facilities: row["Facilities"] || "Not Available",
+  // 🔹 Ensure `data.map()` correctly matches `SchoolData[]`
+  const schools: SchoolData[] = data.map((row): SchoolData => ({
+    name: row["School Name"] ?? "Unnamed School",
+    address: row["Address"] ?? "No Address",
+    city: row["City"] ?? "Unknown City",
+    facilities: row["Facilities"] ?? "Not Available",
+    contact: row["Contact"] ?? null,
+    email: row["Email"] ?? null,
+    website: row["Website"] ?? null,
+    description: row["Description"] ?? null,
   }));
 
-  // Insert data into Prisma
   try {
+    if (schools.length === 0) {
+      console.log("⚠️ No valid school data found in the file.");
+      return;
+    }
+
     await prisma.school.createMany({
-      data: schools,
-      skipDuplicates: true, // Prevent duplicate entries
+      data: schools, // ✅ Type-safe!
+      skipDuplicates: true,
     });
+
     console.log(`✅ Successfully imported ${schools.length} schools!`);
   } catch (error) {
     console.error("❌ Error inserting data into Prisma:", error);
