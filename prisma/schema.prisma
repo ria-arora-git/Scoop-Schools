@@ -15,3 +15,16 @@ model User {
   updatedAt DateTime @updatedAt
   clerkId   String   @unique
 }
+
+model School {
+  id          Int     @id @default(autoincrement())
+  name        String
+  address     String
+  city        String
+  facilities  String
+  contact     String?  // Add these new fields
+  email       String?  // Nullable fields
+  website     String?
+  description String?
+}
+
