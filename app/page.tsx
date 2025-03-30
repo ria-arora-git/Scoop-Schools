@@ -16,8 +16,8 @@ export default function Home() {
             <nav>
                 <ul className="flex space-x-20 text-md">
                     <li><a href="#" className="hover:underline">About us</a></li>
-                    <li><a href="#" className="hover:underline">Search for schools</a></li>
-                    <li><a href="#" className="hover:underline">Post your school</a></li>
+                    <li><a href="/listings" className="hover:underline">Search for schools</a></li>
+                    <li><a href="/profile" className="hover:underline">Your profile</a></li>
                     <li><SignedOut>
                           <SignInButton />
                         </SignedOut>
@@ -35,9 +35,11 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center flex flex-col justify-center items-center">
             <h2 className="text-4xl font-bold mb-4 text-blue-800">Welcome to Scoop Schools</h2>
             <p className="text-lg text-gray-600 mb-6">Discover the best school for your little one!</p>
+            <a href="/listings" className="hover:underline">
             <button className="px-6 py-3 bg-blue-800 text-white font-semibold rounded-lg hover:bg-blue-900">
                 Explore Now
             </button>
+            </a>
         </div>
     </section>
 

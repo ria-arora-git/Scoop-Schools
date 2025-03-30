@@ -1,19 +1,40 @@
 "use client";
+
 import { useState, ChangeEvent, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+
+interface FormData {
+  childName: string;
+  dob: string;
+  gender: string;
+  photo: string;
+  parentsName: string[];
+  contact: string[];
+  email: string;
+  address: string;
+  occupation: string[];
+  curriculum: string;
+  schools: string[];
+  grade: string;
+}
 
 export default function AdmissionForm() {
-  const [formData, setFormData] = useState({
+  const router = useRouter();
+  const { user } = useUser();
+
+  const [formData, setFormData] = useState<FormData>({
     childName: "",
     dob: "",
     gender: "",
     photo: "",
     parentsName: ["", ""],
     contact: ["", ""],
-    email: "",
+    email: user?.emailAddresses[0]?.emailAddress || "", // ✅ Auto-fill but editable
     address: "",
     occupation: ["", ""],
     curriculum: "",
-    schools: [] as string[],
+    schools: [],
     grade: "",
   });
 
@@ -21,22 +42,19 @@ export default function AdmissionForm() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
-  // Handles basic input and select fields
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handles array fields (parentsName & occupation)
-  const handleArrayChange = (index: number, field: "parentsName" | "occupation", value: string) => {
+  const handleArrayChange = (index: number, field: keyof FormData, value: string) => {
     setFormData((prev) => {
-      const updatedArray = [...prev[field]];
+      const updatedArray = [...(prev[field] as string[])];
       updatedArray[index] = value;
       return { ...prev, [field]: updatedArray };
     });
   };
 
-  // Handles form submission
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -51,28 +69,15 @@ export default function AdmissionForm() {
       });
 
       const result = await response.json();
-      if (result.success) {
+      if (response.ok) {
         setSuccess(true);
-        setFormData({
-          childName: "",
-          dob: "",
-          gender: "",
-          photo: "",
-          parentsName: ["", ""],
-          contact: ["", ""],
-          email: "",
-          address: "",
-          occupation: ["", ""],
-          curriculum: "",
-          schools: [],
-          grade: "",
-        });
+        setTimeout(() => router.push("/profile"), 2000);
       } else {
-        setError("Failed to save admission data. Please try again.");
+        setError(result.error || "Failed to save admission data.");
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Submission error:", err);
-      setError("Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -81,47 +86,29 @@ export default function AdmissionForm() {
   return (
     <div className="min-h-screen bg-blue-50 p-8">
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white rounded-xl p-6 shadow-lg">
-        <h1 className="text-blue-800 mb-8 text-3xl font-bold text-center">School Admission Form</h1>
+        <h1 className="text-blue-800 text-3xl font-bold text-center mb-8">School Admission Form</h1>
 
-        {success && <p className="text-green-600 text-center mb-4">Form submitted successfully!</p>}
+        {success && <p className="text-green-600 text-center mb-4">Form submitted successfully! Redirecting...</p>}
         {error && <p className="text-red-600 text-center mb-4">{error}</p>}
 
-        {/* Student Details */}
-        <h1 className="text-blue-800 font-semibold text-xl px-2 text-center mb-3"><u>Student Details</u></h1>
-        <div className="mb-8 p-4 border-2 border-blue-100 rounded-lg">
-          <div className="space-y-4 text-gray-700">
-            <Input label="Full Name" name="childName" value={formData.childName} onChange={handleChange} />
-            <Input label="Date of Birth" type="date" name="dob" value={formData.dob} onChange={handleChange} />
-            <Select label="Gender" name="gender" options={["Male", "Female", "Other"]} value={formData.gender} onChange={handleChange} />
-            <Input label="Photograph URL" type="url" name="photo" value={formData.photo} onChange={handleChange} />
-          </div>
-        </div>
+        <Section title="Student Details">
+          <Input label="Full Name" name="childName" value={formData.childName} onChange={handleChange} />
+          <Input label="Date of Birth" type="date" name="dob" value={formData.dob} onChange={handleChange} />
+          <Select label="Gender" name="gender" options={["Male", "Female", "Other"]} value={formData.gender} onChange={handleChange} />
+          <Input label="Photograph URL" type="url" name="photo" value={formData.photo} onChange={handleChange} />
+        </Section>
 
-        {/* Guardian Details */}
-        <h1 className="text-blue-800 font-semibold px-2 text-xl text-center mb-5"><u>Guardian Details</u></h1>
-        <div className="mb-8 p-4 border-2 border-blue-100 rounded-lg">
-          <div className="space-y-4 text-gray-700">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Father's Name" value={formData.parentsName[0]} onChange={(e) => handleArrayChange(0, "parentsName", e.target.value)} />
-              <Input label="Mother's Name" value={formData.parentsName[1]} onChange={(e) => handleArrayChange(1, "parentsName", e.target.value)} />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Father's Occupation" value={formData.occupation[0]} onChange={(e) => handleArrayChange(0, "occupation", e.target.value)} />
-              <Input label="Mother's Occupation" value={formData.occupation[1]} onChange={(e) => handleArrayChange(1, "occupation", e.target.value)} />
-            </div>
-            <Input label="Email" type="email" name="email" value={formData.email} onChange={handleChange} />
-            <Input label="Address" name="address" value={formData.address} onChange={handleChange} />
-          </div>
-        </div>
+        <Section title="Guardian Details">
+          <Input label="Father's Name" value={formData.parentsName[0]} onChange={(e) => handleArrayChange(0, "parentsName", e.target.value)} />
+          <Input label="Mother's Name" value={formData.parentsName[1]} onChange={(e) => handleArrayChange(1, "parentsName", e.target.value)} />
+          <Input label="Email" type="email" name="email" value={formData.email} onChange={handleChange} />
+          <Input label="Address" name="address" value={formData.address} onChange={handleChange} />
+        </Section>
 
-        {/* Educational Preferences */}
-        <h1 className="text-blue-800 font-semibold px-2 text-xl text-center mb-3"><u>Educational Preferences</u></h1>
-        <div className="mb-8 p-4 border-2 border-blue-100 rounded-lg">
-          <div className="space-y-4 text-gray-700">
-            <Select label="Preferred Curriculum" name="curriculum" options={["CBSE", "ICSE", "IB", "State Board"]} value={formData.curriculum} onChange={handleChange} />
-            <Input label="Grade Applying For" name="grade" value={formData.grade} onChange={handleChange} />
-          </div>
-        </div>
+        <Section title="Educational Preferences">
+          <Select label="Preferred Curriculum" name="curriculum" options={["CBSE", "ICSE", "IB", "State Board"]} value={formData.curriculum} onChange={handleChange} />
+          <Input label="Grade Applying For" name="grade" value={formData.grade} onChange={handleChange} />
+        </Section>
 
         <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors" disabled={loading}>
           {loading ? "Submitting..." : "Submit Application"}
@@ -131,50 +118,27 @@ export default function AdmissionForm() {
   );
 }
 
-// ✅ Input Component with TypeScript
-type InputProps = {
-  label: string;
-  name?: string;
-  type?: string;
-  value: string;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-};
-
-const Input: React.FC<InputProps> = ({ label, name, type = "text", value, onChange }) => (
+/** ✅ Reusable Components */
+const Input = ({ label, name, type = "text", value, onChange }: { label: string; name?: string; type?: string; value: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void; }) => (
   <div>
-    <label className="block text-sm text-blue-600 mb-1">{label}</label>
-    <input
-      name={name}
-      type={type}
-      value={value}
-      onChange={onChange}
-      className="w-full p-2 border-2 border-blue-100 rounded-md focus:border-blue-400 outline-none"
-    />
+    <label className="block text-gray-700">{label}</label>
+    <input type={type} name={name} value={value} onChange={onChange} className="w-full border rounded-lg px-3 py-2 mt-1" />
   </div>
 );
 
-// ✅ Select Component with TypeScript
-type SelectProps = {
-  label: string;
-  name: string;
-  options: string[];
-  value: string;
-  onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
-};
-
-const Select: React.FC<SelectProps> = ({ label, name, options, value, onChange }) => (
+const Select = ({ label, name, options, value, onChange }: { label: string; name: string; options: string[]; value: string; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; }) => (
   <div>
-    <label className="block text-sm text-blue-600 mb-1">{label}</label>
-    <select
-      name={name}
-      value={value}
-      onChange={onChange}
-      className="w-full p-2 border-2 border-blue-100 rounded-md focus:border-blue-400 outline-none bg-white"
-    >
-      <option value="">Select...</option>
-      {options.map((option) => (
-        <option key={option} value={option}>{option}</option>
-      ))}
+    <label className="block text-gray-700">{label}</label>
+    <select name={name} value={value} onChange={onChange} className="w-full border rounded-lg px-3 py-2 mt-1">
+      <option value="">Select</option>
+      {options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
     </select>
+  </div>
+);
+
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <div className="mb-8 p-4 border-2 border-blue-100 rounded-lg">
+    <h1 className="text-blue-800 font-semibold text-xl px-2 text-center mb-3"><u>{title}</u></h1>
+    <div className="space-y-4 text-gray-700">{children}</div>
   </div>
 );

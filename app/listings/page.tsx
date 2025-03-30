@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import SchoolDetailsModal from "../components/SchoolDetailsModal";
-import { School } from "../types"; // Import type
+import { School } from "../types"; 
 
 export default function ListingsPage() {
-  const [schools, setSchools] = useState<School[]>([]); // ✅ Add Type
-  const [selectedSchool, setSelectedSchool] = useState<School | null>(null); // ✅ Add Type
+  const [schools, setSchools] = useState<School[]>([]); 
+  const [selectedSchool, setSelectedSchool] = useState<School | null>(null); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,8 +28,8 @@ export default function ListingsPage() {
   if (loading) return <p>Loading schools...</p>;
 
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="p-5 bg-white flex justify-center items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white text-black w-3/4">
         {schools.length > 0 ? (
           schools.map((school) => (
             <div key={school.id} className="p-4 border rounded-lg shadow">
