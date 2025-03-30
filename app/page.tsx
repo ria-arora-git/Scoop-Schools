@@ -15,7 +15,7 @@ export default function Home() {
             <h1 className="text-2xl font-bold">Scoop Schools</h1>
             <nav>
                 <ul className="flex space-x-20 text-md">
-                    <li><a href="#" className="hover:underline">About us</a></li>
+                    <li><a href="aboutus" className="hover:underline">About us</a></li>
                     <li><a href="/listings" className="hover:underline">Search for schools</a></li>
                     <li><a href="/profile" className="hover:underline">Your profile</a></li>
                     <li><SignedOut>
