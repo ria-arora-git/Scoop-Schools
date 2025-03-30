@@ -1,23 +1,39 @@
-import { getAuth } from "@clerk/nextjs/server";  
-import { NextRequest } from "next/server";  
-import prisma from "@/lib/prisma"; // ✅ Use singleton Prisma instance  
+// import { NextApiRequest, NextApiResponse } from "next";
+// import { PrismaClient } from "@prisma/client";
 
-export async function POST(req: NextRequest) {  
-    try {  
-        const { userId } = getAuth(req); // ✅ Correct function for Clerk auth  
+// const prisma = new PrismaClient();
 
-        if (!userId) return new Response("Unauthorized", { status: 401 });
+// export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+//   if (req.method === "POST") {
+//     try {
+//       const { email, contact, childName, dob, gender, photo, parentsName, address, occupation, curriculum, schools, grade } = req.body;
 
-        const data = await req.json();  
-        const userData = await prisma.user.upsert({  
-            where: { clerkId: userId },  
-            update: { ...data },  
-            create: { clerkId: userId, ...data },  
-        });  
+//       const newUser = await prisma.user.create({
+//         data: {
+//           email,
+//           contact,
+//           childName,
+//           dob: new Date(dob),
+//           gender,
+//           photo,
+//           parentsName,
+//           address,
+//           occupation,
+//           curriculum,
+//           schools,
+//           grade,
+//         },
+//       });
 
-        return new Response(JSON.stringify(userData), { status: 200 });  
-    } catch (error) {  
-        console.error("Error saving data:", error);  
-        return new Response("Error saving data", { status: 500 });  
-    }  
-}
+//       return res.status(201).json({ message: "User created successfully!", user: newUser });
+//     } catch (error: unknown) {
+//         if (error instanceof Error) {
+//           return res.status(500).json({ error: error.message });
+//         }
+//         return res.status(500).json({ error: "An unknown error occurred" });
+//       } 
+//     }      
+
+//   res.setHeader("Allow", ["POST"]);
+//   res.status(405).end(`Method ${req.method} Not Allowed`);
+// }
