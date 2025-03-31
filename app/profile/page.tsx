@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, ReactNode } from "react";
 import { useUser } from "@clerk/nextjs";
 
 interface FormData {
@@ -25,7 +25,6 @@ interface ApiResponse<T> {
 export default function ProfileSection() {
   const { user } = useUser();
 
-  
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
     dob: "",
@@ -51,18 +50,11 @@ export default function ProfileSection() {
 
         const result: ApiResponse<FormData> = await res.json();
         if (result.data) {
-          setFormData({
-            fullName: result.data.fullName || "",
-            dob: result.data.dob || "",
-            gender: result.data.gender || "",
-            imageUrl: result.data.imageUrl || "",
-            fatherName: result.data.fatherName || "",
-            motherName: result.data.motherName || "",
+          setFormData((prev) => ({
+            ...prev,
+            ...result.data,
             email: result.data.email || user?.emailAddresses[0]?.emailAddress || "",
-            address: result.data.address || "",
-            curriculum: result.data.curriculum || "",
-            grade: result.data.grade || "",
-          });
+          }));
         }
       } catch (err) {
         console.error(err);
@@ -76,7 +68,6 @@ export default function ProfileSection() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -117,12 +108,12 @@ export default function ProfileSection() {
           <Input label="Full Name" name="fullName" value={formData.fullName} onChange={handleChange} />
           <Input label="Date of Birth" type="date" name="dob" value={formData.dob} onChange={handleChange} />
           <Select label="Gender" name="gender" options={["Male", "Female", "Other"]} value={formData.gender} onChange={handleChange} />
-          <Input label="Photograph URL" type="url" name="photo" value={formData.imageUrl} onChange={handleChange} />
+          <Input label="Photograph URL" type="url" name="imageUrl" value={formData.imageUrl} onChange={handleChange} />
         </Section>
 
         <Section title="Guardian Details">
-          <Input label="Father's Name" value={formData.fatherName} onChange={handleChange} />
-          <Input label="Mother's Name" value={formData.motherName} onChange={handleChange} />
+          <Input label="Father's Name" name="fatherName" value={formData.fatherName} onChange={handleChange} />
+          <Input label="Mother's Name" name="motherName" value={formData.motherName} onChange={handleChange} />
           <Input label="Email" type="email" name="email" value={formData.email} onChange={handleChange} />
           <Input label="Address" name="address" value={formData.address} onChange={handleChange} />
         </Section>
@@ -141,24 +132,47 @@ export default function ProfileSection() {
 }
 
 /** ✅ Reusable Components */
-const Input = ({ label, name, type = "text", value, onChange }: any) => (
+interface InputProps {
+  label: string;
+  name: string;
+  type?: string;
+  value: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+}
+
+const Input = ({ label, name, type = "text", value, onChange }: InputProps) => (
   <div>
     <label className="block text-gray-700">{label}</label>
     <input type={type} name={name} value={value} onChange={onChange} className="w-full border rounded-lg px-3 py-2 mt-1" />
   </div>
 );
 
-const Select = ({ label, name, options, value, onChange }: any) => (
+interface SelectProps {
+  label: string;
+  name: string;
+  options: string[];
+  value: string;
+  onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
+}
+
+const Select = ({ label, name, options, value, onChange }: SelectProps) => (
   <div>
     <label className="block text-gray-700">{label}</label>
     <select name={name} value={value} onChange={onChange} className="w-full border rounded-lg px-3 py-2 mt-1">
       <option value="">Select</option>
-      {options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+      {options.map((opt) => (
+        <option key={opt} value={opt}>{opt}</option>
+      ))}
     </select>
   </div>
 );
 
-const Section = ({ title, children }: any) => (
+interface SectionProps {
+  title: string;
+  children: ReactNode;
+}
+
+const Section = ({ title, children }: SectionProps) => (
   <div className="mb-8 p-4 border-2 border-blue-100 rounded-lg">
     <h1 className="text-blue-800 font-semibold text-xl px-2 text-center mb-3"><u>{title}</u></h1>
     <div className="space-y-4 text-gray-700">{children}</div>
