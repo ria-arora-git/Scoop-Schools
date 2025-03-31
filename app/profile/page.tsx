@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent, FormEvent, ReactNode } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useUser } from "@clerk/nextjs";
 
 interface FormData {
@@ -49,13 +49,24 @@ export default function ProfileSection() {
         if (!res.ok) throw new Error("Failed to fetch profile data");
 
         const result: ApiResponse<FormData> = await res.json();
-        if (result.data) {
-          setFormData((prev) => ({
-            ...prev,
-            ...result.data,
-            email: result.data.email || user?.emailAddresses[0]?.emailAddress || "",
-          }));
+
+        if (!result.data) {
+          console.error("Error: No data received");
+          return;
         }
+
+        setFormData({
+          fullName: result.data.fullName || "",
+          dob: result.data.dob || "",
+          gender: result.data.gender || "",
+          imageUrl: result.data.imageUrl || "",
+          fatherName: result.data.fatherName || "",
+          motherName: result.data.motherName || "",
+          email: result.data.email || user?.emailAddresses[0]?.emailAddress || "",
+          address: result.data.address || "",
+          curriculum: result.data.curriculum || "",
+          grade: result.data.grade || "",
+        });
       } catch (err) {
         console.error(err);
         setError("Error fetching profile data.");
@@ -140,7 +151,7 @@ interface InputProps {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Input = ({ label, name, type = "text", value, onChange }: InputProps) => (
+const Input: React.FC<InputProps> = ({ label, name, type = "text", value, onChange }) => (
   <div>
     <label className="block text-gray-700">{label}</label>
     <input type={type} name={name} value={value} onChange={onChange} className="w-full border rounded-lg px-3 py-2 mt-1" />
@@ -155,24 +166,22 @@ interface SelectProps {
   onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
 }
 
-const Select = ({ label, name, options, value, onChange }: SelectProps) => (
+const Select: React.FC<SelectProps> = ({ label, name, options, value, onChange }) => (
   <div>
     <label className="block text-gray-700">{label}</label>
     <select name={name} value={value} onChange={onChange} className="w-full border rounded-lg px-3 py-2 mt-1">
       <option value="">Select</option>
-      {options.map((opt) => (
-        <option key={opt} value={opt}>{opt}</option>
-      ))}
+      {options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
     </select>
   </div>
 );
 
 interface SectionProps {
   title: string;
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
-const Section = ({ title, children }: SectionProps) => (
+const Section: React.FC<SectionProps> = ({ title, children }) => (
   <div className="mb-8 p-4 border-2 border-blue-100 rounded-lg">
     <h1 className="text-blue-800 font-semibold text-xl px-2 text-center mb-3"><u>{title}</u></h1>
     <div className="space-y-4 text-gray-700">{children}</div>
