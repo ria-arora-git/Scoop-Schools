@@ -1,80 +1,166 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useUser } from "@clerk/nextjs";
 
-interface UserProfile {
-  childName: string;
+interface FormData {
+  fullName: string;
   dob: string;
   gender: string;
-  photo: string;
+  imageUrl: string;
   fatherName: string;
   motherName: string;
-  fatherOccupation: string;
-  motherOccupation: string;
-  contact1: string;
-  contact2: string;
   email: string;
   address: string;
   curriculum: string;
-  school1: string;
-  school2: string;
   grade: string;
 }
 
-export default function ProfilePage() {
-  const { user } = useUser(); 
-  const [profileData, setProfileData] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+interface ApiResponse<T> {
+  message?: string;
+  error?: string;
+  data?: T;
+}
+
+export default function ProfileSection() {
+  const { user } = useUser();
+
+  
+  const [formData, setFormData] = useState<FormData>({
+    fullName: "",
+    dob: "",
+    gender: "",
+    imageUrl: "",
+    fatherName: "",
+    motherName: "",
+    email: user?.emailAddresses[0]?.emailAddress || "",
+    address: "",
+    curriculum: "",
+    grade: "",
+  });
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    if (!user?.emailAddresses[0]?.emailAddress) return;
-
-    const fetchProfileData = async () => {
+    async function fetchUserData() {
       try {
-        const email = user.emailAddresses[0].emailAddress;
-        const response = await fetch(`/api/user?email=${email}`);
+        const res = await fetch("/api/admission");
+        if (!res.ok) throw new Error("Failed to fetch profile data");
 
-        const data = await response.json();
-        if (response.ok) {
-          setProfileData(data);
-        } else {
-          setError(data.error || "Failed to fetch profile data.");
+        const result: ApiResponse<FormData> = await res.json();
+        if (result.data) {
+          setFormData({
+            fullName: result.data.fullName || "",
+            dob: result.data.dob || "",
+            gender: result.data.gender || "",
+            imageUrl: result.data.imageUrl || "",
+            fatherName: result.data.fatherName || "",
+            motherName: result.data.motherName || "",
+            email: result.data.email || user?.emailAddresses[0]?.emailAddress || "",
+            address: result.data.address || "",
+            curriculum: result.data.curriculum || "",
+            grade: result.data.grade || "",
+          });
         }
       } catch (err) {
-        console.error("Error fetching profile data:", err);
-        setError("Something went wrong.");
-      } finally {
-        setLoading(false);
+        console.error(err);
+        setError("Error fetching profile data.");
       }
-    };
+    }
+    fetchUserData();
+  }, [user?.emailAddresses]);
 
-    fetchProfileData();
-  }, [user]);
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  if (loading) return <p className="text-center text-gray-600">Loading profile...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
-  if (!profileData) return <p className="text-center text-gray-600">No profile data found.</p>;
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setSuccess(false);
+    setError("");
+
+    try {
+      const response = await fetch("/api/admission", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const result: ApiResponse<FormData> = await response.json();
+      if (response.ok) {
+        setSuccess(true);
+      } else {
+        setError(result.error || "Failed to save profile.");
+      }
+    } catch (err) {
+      console.error("Submission error:", err);
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg mt-10">
-      <h1 className="text-3xl font-bold text-center text-blue-800">Profile</h1>
-      <div className="mt-6 space-y-4">
-        <p><strong>Full Name:</strong> {profileData.childName}</p>
-        <p><strong>Date of Birth:</strong> {new Date(profileData.dob).toDateString()}</p>
-        <p><strong>Gender:</strong> {profileData.gender}</p>
-        <p><strong>Email:</strong> {profileData.email}</p>
-        <p><strong>Contact:</strong> {profileData.contact1}, {profileData.contact2}</p>
-        <p><strong>Address:</strong> {profileData.address}</p>
-        <p><strong>Father Name:</strong> {profileData.fatherName}</p>
-        <p><strong>Mother Name:</strong> {profileData.motherName}</p>
-        <p><strong>Father Occupation:</strong> {profileData.fatherOccupation}</p>
-        <p><strong>Mother Occupation:</strong> {profileData.motherOccupation}</p>
-        <p><strong>Preferred Curriculum:</strong> {profileData.curriculum}</p>
-        <p><strong>Grade Applying For:</strong> {profileData.grade}</p>
-        <p><strong>Previous Schools:</strong> {profileData.school1}, {profileData.school2}</p>
-      </div>
+    <div className="min-h-screen bg-blue-50 p-8">
+      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white rounded-xl p-6 shadow-lg">
+        <h1 className="text-blue-800 text-3xl font-bold text-center mb-8">Profile Information</h1>
+
+        {success && <p className="text-green-600 text-center mb-4">Profile saved successfully!</p>}
+        {error && <p className="text-red-600 text-center mb-4">{error}</p>}
+
+        <Section title="Student Details">
+          <Input label="Full Name" name="fullName" value={formData.fullName} onChange={handleChange} />
+          <Input label="Date of Birth" type="date" name="dob" value={formData.dob} onChange={handleChange} />
+          <Select label="Gender" name="gender" options={["Male", "Female", "Other"]} value={formData.gender} onChange={handleChange} />
+          <Input label="Photograph URL" type="url" name="photo" value={formData.imageUrl} onChange={handleChange} />
+        </Section>
+
+        <Section title="Guardian Details">
+          <Input label="Father's Name" value={formData.fatherName} onChange={handleChange} />
+          <Input label="Mother's Name" value={formData.motherName} onChange={handleChange} />
+          <Input label="Email" type="email" name="email" value={formData.email} onChange={handleChange} />
+          <Input label="Address" name="address" value={formData.address} onChange={handleChange} />
+        </Section>
+
+        <Section title="Educational Preferences">
+          <Select label="Preferred Curriculum" name="curriculum" options={["CBSE", "ICSE", "IB", "State Board"]} value={formData.curriculum} onChange={handleChange} />
+          <Input label="Grade Applying For" name="grade" value={formData.grade} onChange={handleChange} />
+        </Section>
+
+        <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors" disabled={loading}>
+          {loading ? "Saving..." : "Save Profile"}
+        </button>
+      </form>
     </div>
   );
 }
+
+/** ✅ Reusable Components */
+const Input = ({ label, name, type = "text", value, onChange }: any) => (
+  <div>
+    <label className="block text-gray-700">{label}</label>
+    <input type={type} name={name} value={value} onChange={onChange} className="w-full border rounded-lg px-3 py-2 mt-1" />
+  </div>
+);
+
+const Select = ({ label, name, options, value, onChange }: any) => (
+  <div>
+    <label className="block text-gray-700">{label}</label>
+    <select name={name} value={value} onChange={onChange} className="w-full border rounded-lg px-3 py-2 mt-1">
+      <option value="">Select</option>
+      {options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+    </select>
+  </div>
+);
+
+const Section = ({ title, children }: any) => (
+  <div className="mb-8 p-4 border-2 border-blue-100 rounded-lg">
+    <h1 className="text-blue-800 font-semibold text-xl px-2 text-center mb-3"><u>{title}</u></h1>
+    <div className="space-y-4 text-gray-700">{children}</div>
+  </div>
+);

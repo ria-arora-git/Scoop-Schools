@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
-    const email = url.searchParams.get("email"); // ✅ Get email from query params
+    const email = url.searchParams.get("email"); // 
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });

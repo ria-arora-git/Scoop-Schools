@@ -44,7 +44,6 @@ export default function ListingsPage() {
     );
   };
 
-  // Create a URL for comparison page
   const comparisonUrl = {
     pathname: "/comparison",
     query: { selectedSchools: JSON.stringify(comparisonList) },
@@ -62,8 +61,8 @@ export default function ListingsPage() {
             onChange={(e) => setFilters({ ...filters, city: e.target.value })}
           >
             <option value="">All Cities</option>
-            <option value="City1">City1</option>
-            <option value="City2">City2</option>
+            <option value="City1">Jaipur</option>
+            <option value="City2">Delhi</option>
             {/* Add more cities */}
           </select>
           <select
@@ -71,7 +70,7 @@ export default function ListingsPage() {
             onChange={(e) => setFilters({ ...filters, facilities: e.target.value })}
           >
             <option value="">All Facilities</option>
-            <option value="Playground">Playground</option>
+            <option value="Hostel">Hostel</option>
             <option value="Library">Library</option>
             {/* Add more facilities */}
           </select>

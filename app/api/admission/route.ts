@@ -1,32 +1,62 @@
 import { NextResponse } from "next/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+//  Profile Data Submission (POST)
 export async function POST(req: Request) {
   try {
+    const user = await currentUser(); 
+    if (!user || !user.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const data = await req.json();
 
-    const newAdmission = await prisma.user.create({
-      data: {
-        childName: data.childName,
-        dob: data.dob,
-        gender: data.gender,
-        photo: data.photo,
-        fatherName: data.parentsName?.[0] || null,
-        motherName: data.parentsName?.[1] || null,
-        contact1: data.contact?.[0] || "",
-        contact2: data.contact?.[1] || "",
-        email: data.email,
-        address: data.address,
-        curriculum: data.curriculum,
-        grade: data.grade,
-      },
+
+    const cleanedData = {
+      fullName: data.childName || null,
+      dob: data.dob || null,
+      gender: data.gender || null,
+      imageUrl: data.imageUrl || null,
+      fatherName: data.fatherName || null,
+      motherName: data.motherName || null,
+      email: data.email || null,
+      address: data.address || null,
+      curriculum: data.curriculum || null,
+      grade: data.grade || null,
+    };
+    const updatedUser = await prisma.user.upsert({
+      where: { clerkId: user.id },
+      update: cleanedData,
+      create: { clerkId: user.id, ...cleanedData },
     });
 
-    return NextResponse.json({ message: "Admission submitted successfully!", data: newAdmission }, { status: 200 });
+    return NextResponse.json({ message: "Profile saved successfully", data: updatedUser });
   } catch (error) {
-    console.error("Error saving admission data:", error);
-    return NextResponse.json({ error: "Failed to save admission data." }, { status: 500 });
+    console.error("Error saving profile:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+// Fetch User Profile (GET)
+export async function GET() {
+  try {
+    const user = await currentUser(); 
+    if (!user || !user.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userProfile = await prisma.user.findUnique({ where: { clerkId: user.id } });
+
+    if (!userProfile) {
+      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ data: userProfile });
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

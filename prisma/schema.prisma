@@ -8,21 +8,21 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(uuid())
-  childName  String
-  dob        String
-  gender     String
-  photo      String
+  id         String  @id @default(uuid())
+  clerkId    String  @unique
+  fullName   String?
+  dob        String?
+  gender     String?
+  imageUrl   String?
   fatherName String?
   motherName String?
-  contact1   String
-  contact2   String
-  email      String @unique
-  address    String
-  curriculum String
-  grade      String
-  createdAt  DateTime @default(now())
+  email      String  @unique
+  address    String?
+  curriculum String?
+  grade      String?
 }
+
+
 
 
 
