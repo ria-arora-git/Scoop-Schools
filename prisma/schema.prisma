@@ -8,21 +8,28 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  childName    String   @default("Unknown")
-  dob          String   @default("2000-01-01")
-  gender       String   @default("Not Specified")
-  photo        String   @default("")
-  parentsName  String[]  
-  contact      String   @default("")
-  email        String   @unique  
-  address      String   @default("")
-  occupation   String[]  
-  curriculum   String   @default("")
-  schools      String[]  
-  grade        String   @default("")
-  createdAt    DateTime @default(now())
+  id         String  @id @default(uuid())
+  clerkId    String  @unique
+  fullName   String?
+  dob        String?
+  gender     String?
+  imageUrl   String?
+  fatherName String?
+  motherName String?
+  email      String  @unique
+  address    String?
+  curriculum String?
+  grade      String?
 }
+
+
+
+
+
+
+
+
+
 
 
 

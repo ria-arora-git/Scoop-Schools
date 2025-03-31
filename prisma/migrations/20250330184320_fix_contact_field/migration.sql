@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "fatherOccupation" DROP NOT NULL,
+ALTER COLUMN "motherOccupation" DROP NOT NULL,
+ALTER COLUMN "school1" DROP NOT NULL,
+ALTER COLUMN "school2" DROP NOT NULL;
