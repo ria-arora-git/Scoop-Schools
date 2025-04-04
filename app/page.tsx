@@ -13,8 +13,8 @@ export default function Home() {
 
     {/* Hero Section */}
     <section className='flex'>
-        <div className='bg-white w-1/2 pt-30'>
-            <Image src="/logo.jpeg" alt="Logo" height={400} width={400} className='w-full' />
+        <div className='bg-white w-1/2 pt-15 pl-10 flex justify-center items-center'>
+            <Image src="/logo.jpeg" alt="Logo" height={600} width={600} className='' />
         </div>
         <div className="bg-white py-12 h-[84vh] flex flex-col justify-center items-center w-1/2 ">
             <div className="container mx-auto px-4 flex flex-col justify-center items-end pr-40">
